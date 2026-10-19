@@ -1,6 +1,7 @@
 ---
 title: Transaction Documents
 description: Samooha ingest of GR, CR, GD, and VR documents, and the GRN result post back to Samooha.
+lastUpdated: 2026-10-19
 ---
 
 Samooha POSTs documents to Geoplan in batches. A warehouse user on the Geoplan app picks a document and starts the scan. Geoplan POSTs scan results back only for GRN.
@@ -17,19 +18,27 @@ Request body:
 
 ```json
 {
-  "activity": "GR",
-  "documentNo": "GRN-00001",
-  "documentSource": "PI-26084567",
-  "refNo": "ORFW26-310003494",
-  "whCode": "10000-09",
-  "lines": [
+  "documents": [
     {
-      "sku": "RP80282244",
-      "quantity": "2"
+      "activity": "GR",
+      "documentNo": "GRN-00001",
+      "documentSource": "PI-26084567",
+      "refNo": "ORFW26-310003494",
+      "whCode": "10000-09",
+      "lines": [
+        {
+          "sku": "RP80282244",
+          "quantity": "2"
+        }
+      ]
     }
   ]
 }
 ```
+
+A single document object or a bare array of documents is also accepted, and `quantity` may be a number or a numeric string.
+
+Activity is `GR` (Goods Receipt), `GD` (Goods Delivery), `CR` (Customer Return), or `VR` (Vendor Return).
 
 Response:
 
@@ -37,17 +46,19 @@ Response:
 {
   "statusCode": 201,
   "message": "Success",
-  "data": {
-    "documents": [
-      {
-        "activity": "GR",
-        "documentNo": "GRN-00001",
-        "status": "New"
-      }
-    ]
-  }
+  "data": [
+    {
+      "activity": "GR",
+      "documentNo": "GRN-00001",
+      "documentSource": "PI-26084567",
+      "refNo": "ORFW26-310003494",
+      "whCode": "10000-09"
+    }
+  ]
 }
 ```
+
+A batch is all-or-nothing. If any document is invalid, nothing is saved and the API returns 400 with the reasons.
 
 ## Goods Receipt result
 

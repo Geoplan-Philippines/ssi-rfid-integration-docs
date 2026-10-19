@@ -1,6 +1,7 @@
 ---
 title: Master Data
 description: Samooha POSTs VPM add, edit, and delete deltas to Geoplan.
+lastUpdated: 2026-10-19
 ---
 
 Samooha POSTs VPM records to Geoplan in a batch. Each record has `operation`: `ADD`, `EDIT`, or `DELETE`.
@@ -39,23 +40,42 @@ Request body:
 ]
 ```
 
+`barcode` is required for `ADD` and `EDIT`.
+
 Response:
+
+| Rows | HTTP | `message` |
+| --- | --- | --- |
+| All rows OK | `200` | `Success` |
+| Some rows failed | `207` | `Partial success` |
+| All rows failed | `422` | `All records failed` |
+
+Failed rows are skipped while the good rows are still saved, so read each row's `status`.
+
+HTTP 207:
 
 ```json
 {
-  "statusCode": 200,
-  "message": "Success",
-  "data": [
-    {
-      "operation": "edit",
-      "vpmCode": "ON-VPM-001",
-      "skuCode": "RP80282244"
-    },
-    {
-      "operation": "delete",
-      "vpmCode": "ON-VPM-002",
-      "skuCode": "RP80282244"
-    }
-  ]
+  "statusCode": 207,
+  "message": "Partial success",
+  "data": {
+    "accepted": 1,
+    "rejected": 1,
+    "results": [
+      {
+        "operation": "edit",
+        "vpmCode": "ON-VPM-001",
+        "skuCode": "RP80282244",
+        "status": "success"
+      },
+      {
+        "operation": "add",
+        "vpmCode": "ON-VPM-003",
+        "skuCode": "RP80282245",
+        "status": "failed",
+        "error": "barcode should not be empty"
+      }
+    ]
+  }
 }
 ```
